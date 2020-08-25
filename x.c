@@ -826,6 +826,12 @@ xloadcols(void)
 	if (opt_alpha)
 		alpha = strtof(opt_alpha, NULL);
 	dc.col[defaultbg].color.alpha = (unsigned short)(0xffff * alpha);
+		dc.col[defaultbg].color.red =
+		((unsigned short)(dc.col[defaultbg].color.red * alpha)) & 0xff00;
+	dc.col[defaultbg].color.green =
+		((unsigned short)(dc.col[defaultbg].color.green * alpha)) & 0xff00;
+	dc.col[defaultbg].color.blue =
+		((unsigned short)(dc.col[defaultbg].color.blue * alpha)) & 0xff00;
 	dc.col[defaultbg].pixel &= 0x00FFFFFF;
 	dc.col[defaultbg].pixel |= (unsigned char)(0xff * alpha) << 24;
 	loaded = 1;
@@ -844,6 +850,8 @@ xsetcolorname(int x, const char *name)
 
 	XftColorFree(xw.dpy, xw.vis, xw.cmap, &dc.col[x]);
 	dc.col[x] = ncolor;
+	if (x == defaultbg)
+		dc.col[defaultbg].color.alpha = (unsigned short)(0xffff * alpha);
 
 	return 0;
 }
@@ -857,6 +865,12 @@ xclear(int x1, int y1, int x2, int y2)
 	XftDrawRect(xw.draw,
 			&dc.col[IS_SET(MODE_REVERSE)? defaultfg : defaultbg],
 			x1, y1, x2-x1, y2-y1);
+}
+
+void
+xclearwin(void)
+{
+	xclear(0, 0, win.w, win.h);
 }
 
 void
